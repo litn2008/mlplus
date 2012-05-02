@@ -2,8 +2,12 @@
 #include <vector>
 #include <string>
 #include "gtest/gtest.h"
+#include "attribute_container.h"
+#include "attribute_value.h"
+#include "dataset.h"
 using namespace mlplus;
 using namespace std;
+
 TEST(DataSetTest, smoke){
     Attribute name("name");
     EXPECT_TRUE(-INFINITY <= -INFINITY); 
@@ -25,25 +29,49 @@ TEST(DataSetTest, smoke){
     attrs.push_back(&target);
     target.setIndex(2); 
 
-    DataSet* data = new DataSet("train_data", attrs);
+    DataSet* data = new DataSet("train_data", new VectorAttributeContainer(attrs));
     data->setTarget(&target);
     EXPECT_EQ(data->targetIndex(), 2); 
     EXPECT_EQ(data->targetAttribute(), &target); 
     EXPECT_EQ(data->attributeAt(0), &name); 
     EXPECT_EQ(data->numAttributes(), 3); 
-    EXPECT_ANY_THROW(data->attributeAt(3)); 
-    EXPECT_ANY_THROW(data->setAttribute(3, &name)); 
-}
+    EXPECT_FALSE(data->attributeAt(3)); 
+    EXPECT_FALSE(data->setAttribute(3, &name)); 
 
-TEST(InstanceTest, smoke){
-    Instance instance(10);
-    EXPECT_NE(Instance::missingValue(), Instance::missingValue());
-    EXPECT_TRUE(Instance::isMissingValue(Instance::missingValue()));
-    EXPECT_TRUE(Instance::isMissingValue(0));
-    EXPECT_TRUE(Instance::isMissingValue(-1));
+    DenseInstance instance(10);
+    instance.setDataset(data);
     EXPECT_FALSE(instance.isSparse());
-    EXPECT_EQ(instance.locate(0), 0);
     EXPECT_EQ(instance.getGroupId(), -1);
     instance.setGroupId(0);
     EXPECT_EQ(instance.getGroupId(), 0);
-}
+    EXPECT_EQ(instance.numAttributes(), 10);
+    EXPECT_EQ(instance.numTargets(), 1);
+    EXPECT_EQ(instance.numValues(), 10);
+    EXPECT_TRUE(instance.hasMissingValue());
+    instance.setValue(0, 1);
+    instance.setValue(1, 2);
+    instance.setValue(2, 3);
+    instance.setValue(3, 4);
+    instance.setValue(11, 4);
+
+    EXPECT_EQ(instance.getValue(0), 1);
+    EXPECT_EQ(instance.getValue(1), 2);
+    EXPECT_EQ(instance.numAttributes(), 12);
+    instance.setMissing(1);
+    EXPECT_NE(instance.getValue(1), 2);
+
+    Attribute* a = instance.attributeAt(0);
+    instance.setValue(*a, 10.0f);
+    EXPECT_EQ(instance.getValue(a), 10);
+    EXPECT_EQ(instance.getValue(0), 10);
+    EXPECT_FALSE(instance.isMissing(*a));
+    EXPECT_TRUE(instance.isMissing(*instance.attributeAt(1)));
+
+    EXPECT_EQ(instance.getWeight(), 1);
+    instance.setWeight(0);
+    EXPECT_EQ(instance.getWeight(), 0);
+
+    instance.setTargetValue(10);
+    EXPECT_EQ(instance.targetValue(), 10);
+};
+
