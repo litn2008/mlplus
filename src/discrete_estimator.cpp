@@ -1,4 +1,5 @@
 #include <cmath>
+#include <sstream>
 #include <stdexcept>
 #include "estimators/estimator.h"
 #include "estimators/discrete_estimator.h"
@@ -61,6 +62,30 @@ DiscreteEstimator::~DiscreteEstimator()
     mCounts = NULL;
 }
 
+std::string DiscreteEstimator::toString()
+{
+    ostringstream oss;
+    oss << mSumOfCounts << "\t" << mNumOfClass << "\t";
+    for (int i = 0; i < mNumOfClass; ++i)
+    {
+        oss << mCounts[i] << "\t";
+    }
+    return oss.str();
+}
+void DiscreteEstimator::fromString(const std::string&)
+{
+    istringstream iss;
+    iss >> mSumOfCounts >> mNumOfClass;
+    if (NULL != mCounts)
+    {
+        delete mCounts;
+    }
+    mCounts = new double[mNumOfClass];
+    for (int i = 0; i < mNumOfClass; ++i)
+    {
+        iss >> mCounts[i];
+    }
+}
 } // namespace estimators
 } // namespace mlplus
 

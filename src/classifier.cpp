@@ -1,50 +1,29 @@
-#include <mlplus/core/Instances.h>
-#include <mlplus/core/Instance.h>
-#include <mlplus/core/Attribute.h>
-#include <mlplus/classifiers/Classifier.h>
+#include <algorithm>
+#include "database.h"
+#include "instance.h"
+#include "attribute.h"
+#include "classifier.h"
 
 namespace mlplus
 {
-namespace classifiers
-{
-
 using namespace std;
-
 Classifier::~Classifier()
 {
 }
 
-double Classifier::classifyInstance(Instance * instance) const
+double Classifier::classifyInstance(Instance* instance) const
 {
-    const vector<double> dist& = distributionForInstance(instance);
-    switch(instance->classAttribute()->type())
+    const vector<double> dist& = targetDistribution(instance);
+    if(instance->targetAttribute()->isNominal())
     {
-    case Attribute::NOMINAL:
-    {
-        double max = 0;
-        int maxIndex = 0;
-        for(int i = 0; i < (int)dist.size(); i++)
-        {
-            if(dist[i] > max)
-            {
-                maxIndex = i;
-                max = dist[i];
-            }
-        }
-        if(max > 0)
-	{
-	   return maxIndex;
-	}
+        return max_element(dist.begin(), dist.end()) - dist.begin();
     }
-    break;
-    case Attribute::NUMERIC:
+    else if(instance->targetAttribute()->isNumeric())
+    {
         return dist[0];
-    default:
-        break;
     }
     return Instance::missingValue();
 }
 
-} // namespace classifiers
 } // namespace mlplus
 

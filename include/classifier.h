@@ -1,45 +1,39 @@
 #ifndef MLPLUS_CLASSIFIERS_CLASSIFIER_H
-#ifndef MLPLUS_CLASSIFIERS_CLASSIFIER_H
-
+#define MLPLUS_CLASSIFIERS_CLASSIFIER_H
 #include <string>
 #include <vector>
-
+#include <utility>
 namespace mlplus
 {
-namespace classifiers
-{
-class Instance;
+class IInstance;
 class DataSet;
 class Classifier
 {
-protected:
+private:
     std::string mName;
-    bool mDebug;
-
+    bool mDebugMode;
 public:
-    Classifier(const std::string& name) : mName(name)
-    {
-    }
-
-    virtual ~Classifier();
-
-    inline bool getDebug()
-    {
-        return mDebug;
-    }
-
-    inline void setDebug(bool value = true)
-    {
-        mDebug = value;
-    }
-
-    virtual void buildClassifier(Instances* data) = 0;
-    virtual double classifyInstance(Instance* i) const;
-    virtual void updateClassifier(Instance* instance) = 0;
-    virtual std::vector<double> distributionForInstance(Instance * i) = 0;
+    Classifier(const std::string& name): mName(name), mDebugMode(false) {}
+    virtual ~Classifier(){}
+    inline bool getDebug();
+    inline void setDebug(bool value = true);
+    virtual void init(){};
+    virtual void train(DataSet* data) = 0;
+    virtual std::pair<int, double> predict(IInstance* i) = 0;
+    virtual void update(IInstance* instance) = 0;
+    virtual void load(istream& input) = 0;
+    virtual void save(ostream& output) = 0;
+    virtual std::vector<double> targetDistribution(IInstance* i) = 0;
 };
 
-} // namespace classifier
+inline bool Classifier::getDebug()
+{
+    return mDebugMode;
+}
+inline void Classifier::setDebug(bool value)
+{
+    mDebugMode = value;
+}
 } // namespace mlplus
 
 #endif

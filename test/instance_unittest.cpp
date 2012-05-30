@@ -9,34 +9,34 @@ using namespace mlplus;
 using namespace std;
 
 TEST(DataSetTest, smoke){
-    Attribute name("name");
+    SharedAttributePtr name(new Attribute("name"));
     EXPECT_TRUE(-INFINITY <= -INFINITY); 
-    EXPECT_NE(name.getLowerBound(), NAN); 
-    EXPECT_NE(name.getUpperBound(), NAN); 
-    EXPECT_TRUE(name.upperBoundIsOpen()); 
-    EXPECT_TRUE(name.lowerBoundIsOpen()); 
-    EXPECT_FALSE(name.isInRange(-INFINITY)); 
-    EXPECT_TRUE(name.isInRange(1)); 
+    EXPECT_NE(name->getLowerBound(), NAN); 
+    EXPECT_NE(name->getUpperBound(), NAN); 
+    EXPECT_TRUE(name->upperBoundIsOpen()); 
+    EXPECT_TRUE(name->lowerBoundIsOpen()); 
+    EXPECT_FALSE(name->isInRange(-INFINITY)); 
+    EXPECT_TRUE(name->isInRange(1)); 
 
-    Attribute sex("sex");
-    Attribute target("spam");
+    SharedAttributePtr sex(new Attribute("sex"));
+    SharedAttributePtr target(new Attribute("spam"));
 
-    vector<Attribute*> attrs;
-    attrs.push_back(&name);
-    name.setIndex(0);
-    attrs.push_back(&sex);
-    sex.setIndex(1);
-    attrs.push_back(&target);
-    target.setIndex(2); 
+    vector<SharedAttributePtr> attrs;
+    attrs.push_back(name);
+    name->setIndex(0);
+    attrs.push_back(sex);
+    sex->setIndex(1);
+    attrs.push_back(target);
+    target->setIndex(2); 
 
     DataSet* data = new DataSet("train_data", new VectorAttributeContainer(attrs));
-    data->setTarget(&target);
+    data->setTargetIndex(target->getIndex());
     EXPECT_EQ(data->targetIndex(), 2); 
-    EXPECT_EQ(data->targetAttribute(), &target); 
-    EXPECT_EQ(data->attributeAt(0), &name); 
+    EXPECT_EQ(data->targetAttribute(), target.get()); 
+    EXPECT_EQ(data->attributeAt(0), name.get()); 
     EXPECT_EQ(data->numAttributes(), 3); 
     EXPECT_FALSE(data->attributeAt(3)); 
-    EXPECT_FALSE(data->setAttribute(3, &name)); 
+    EXPECT_FALSE(data->setAttribute(3, name.get())); 
 
     DenseInstance instance(10);
     instance.setDataset(data);

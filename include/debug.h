@@ -1,5 +1,5 @@
-#ifndef __WEKACPP_CORE_DEBUG__
-#define __WEKACPP_CORE_DEBUG__
+#ifndef  MLPLUS_DEBUG_H
+#define MLPLUS_DEBUG_H
 
 #include <cstdio>
 #include <iostream>
@@ -11,32 +11,18 @@ using namespace std;
 
 class Debug
 {
-    FILE * mfStream;
-    ostream * m_oStream;
+    istream* mfStream;
+    ostream * mOstream;
 
 public:
-    Debug() :
-        mfStream(NULL),
-        m_oStream(NULL)
+    Debug(): mfStream(NULL), mOstream(NULL)
     {
     }
-
     void setStream(ostream * os);
-    void setStream(FILE * fp);
+    void setStream(istream* fp);
     void dprintf(const char * fmt, ...);
 };
-
 extern Debug Debug;
-
 }
 
-#endif /* __WEKACPP_CORE_DEBUG__ */
-
-// Local variables:
-//  mode: C++
-//  c-indent-level: 4
-//  c-basic-offset: 4
-//  tab-width: 4
-// End:
-//
-// vim:tabstop=4:shiftwidth=4:smarttab:
+#endif

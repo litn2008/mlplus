@@ -12,7 +12,7 @@ namespace mlplus
 class VectorAttributeContainer: public IAttributeContainer
 {
 public:
-    typedef std::vector<Attribute*>  VectorContainer;
+    typedef std::vector<SharedAttributePtr>  VectorContainer;
     class VectorIterator: public IAttributeIterator
     {
     public:
@@ -29,7 +29,9 @@ public:
         }
         /*override*/ Attribute* next()
         {
-            return *mCur++;
+            Attribute* r = mCur->get();
+            ++mCur;
+            return r;
         }
     };
 private:
@@ -50,7 +52,7 @@ public:
 class MapAttributeContainer:public IAttributeContainer
 {
 public:
-    typedef std::map<int, Attribute*>  MapContainer;
+    typedef std::map<int, SharedAttributePtr>  MapContainer;
     class MapIterator: public IAttributeIterator
     {
     public:
@@ -67,7 +69,7 @@ public:
         }
         /*override*/ Attribute* next()
         {
-            Attribute* i = mCur->second;
+            Attribute* i = mCur->second.get();
             ++mCur;
             return i;
         }

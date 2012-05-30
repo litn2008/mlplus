@@ -1,239 +1,102 @@
 #include <instance.h>
 #include <stdexcept>
 #include <vector>
-
 namespace mlplus
 {
 
-using namespace std;
-Instance::Instance(int numAttributes):
-    IInstance(),
-    mDataset(NULL), mWeight(1), mGroupId(-1),
-    mAttrValues(numAttributes, missingValue())
+DenseInstance::DenseInstance(int numAttributes): AbstractInstance(numAttributes)
 {
 }
-
-Instance::Instance(const Instance* instance) :
-    IInstance(*instance),
-    mDataset(instance->mDataset),
-    mWeight(instance->mWeight),
-    mGroupId(instance->mGroupId),
-    mAttrValues(instance->mAttrValues)
+DenseInstance::DenseInstance(const DenseInstance& instance): AbstractInstance(instance)
 {
 }
-
-Instance::Instance(const Instance& instance) :
-    IInstance(instance),
-    mDataset(instance.mDataset),
-    mWeight(instance.mWeight),
-    mGroupId(instance.mGroupId),
-    mAttrValues(instance.mAttrValues)
+DenseInstance::DenseInstance(const vector<ValueType>& values, ValueType weight): AbstractInstance(values, weight)
 {
 }
-
-Instance::Instance(const vector<DataType>& values, DataType weight):
-    mDataset(NULL),
-    mWeight(weight),
-    mGroupId(-1), mAttrValues(values)
+DenseInstance* DenseInstance::clone()
 {
+    return new DenseInstance(*this);
 }
-
-Instance::~Instance()
-{
-}
-bool Instance::isSparse()
+bool DenseInstance::isSparse()
 {
     return false;
 }
-int Instance::locate(int index) const
+int DenseInstance::getIndexAt(int localIdx)
 {
-    return index;
+    return localIdx;
 }
-int Instance::getGroupId() const
+ValueType DenseInstance::getValue(int attrIndex)
 {
-    return mGroupId;
+    return mAttrValues.at(attrIndex);
 }
-void Instance::setGroupId(int id)
+void  DenseInstance::setValue(int attrIndex, ValueType value)
 {
-    mGroupId = id;
-}
-void Instance::reserve(int numAttribue)
-{
-    mAttrValues.reserve(numAttribue);
-}
-Attribute* Instance::attributeAt(int index)
-{
-    assert(mDataset != NULL);
-    return mDataset->attributeAt(index);
-}
-Attribute*  Instance::targetAttribute()
-{
-    assert(mDataset != NULL);
-    return mDataset->targetAttribute();
-}
-int  Instance::targetIndex()
-{
-    assert(mDataset != NULL);
-    return mDataset->targetIndex();
-}
-bool  Instance::targetIsMissing()
-{
-    assert(targetIndex() >= 0);
-    return isMissing(targetIndex());
-}
-DataType Instance::targetValue()
-{
-    assert(targetIndex() >= 0);
-    return mAttrValues[targetIndex()];
-}
-
-DataSet* Instance::getDataset()
-{
-    return mDataset;
-}
-
-bool  Instance::hasMissingValue()
-{
-    assert(NULL == mDataset);
-    for(int i = 0; i < numAttributes(); i++)
+    if (attrIndex < 0)
     {
-        if(i != targetIndex())
-        {
-            if(isMissing(i))
-            {
-                return true;
-            }
-        }
+        return;
     }
-    return false;
-}
-
-
-int Instance::numAttributes()
-{
-    return mAttrValues.size();
-}
-int Instance::numTargets()
-{
-    assert(mDataset);
-    return mDataset->numTargets();
-}
-int Instance::numValues()
-{
-    return mAttrValues.size();
-}
-void Instance::replaceMissingValues(DataType value)
-{
-    for(unsigned int i = 0; i < mAttrValues.size(); i++)
-        if(isMissingValue(mAttrValues[i]))
-            mAttrValues[i] = value;
-}
-void Instance::setTargetMissing()
-{
-    if(targetIndex() < 0)
-        throw runtime_error("class is not set");
-    setMissing(targetIndex());
-}
-void Instance::setTargetValue(DataType value)
-{
-    if(targetIndex() < 0)
-        throw runtime_error("class is not set");
-    setValue(targetIndex(), value);
-}
-void Instance::setTargetValue(const string& value)
-{
-    if(targetIndex() < 0)
-        throw runtime_error("class is not set");
-    setValue(targetIndex(), value);
-}
-
-void Instance::setDataset(DataSet* instances)
-{
-    mDataset = instances;
-}
-
-bool Instance::isMissing(int attrIndex)
-{
-    int pos = locate(attrIndex);
-    return mAttrValues.at(pos) == missingValue();
-}
-bool Instance::isMissing(Attribute& attr)
-{
-    return isMissing(attr.getIndex());
-}
-void Instance::setMissing(int attrIndex)
-{
-    setValue(attrIndex, missingValue());
-}
-void Instance::setMissing(Attribute& attr)
-{
-    setMissing(attr.getIndex());
-}
-
-void Instance::setValue(Attribute& attr, DataType value)
-{
-    setValue(attr.getIndex(), value);
-}
-void Instance::setWeight(double weight)
-{
-    mWeight = weight;
-}
-
-DataType Instance::getValue(int attrIndex)
-{
-    int position = locate(attrIndex);
-    return mAttrValues.at(position);
-}
-
-DataType Instance::getValue(Attribute& attr)
-{
-    return getValue(attr.getIndex());
-}
-
-DataType Instance::getValue(Attribute * attr)
-{
-    return getValue(attr->getIndex());
-}
-
-double Instance::getWeight()
-{
-    return mWeight;
-}
-
-void Instance::setValue(int attrIndex, DataType value)
-{
-    int position = locate(attrIndex);
-    if((int)mAttrValues.size() < attrIndex)
+    if((unsigned)attrIndex >= mAttrValues.size())
     {
-        mAttrValues.resize(position + 1, missingValue());
+        mAttrValues.resize(attrIndex + 1, missingValue());
     }
-    mAttrValues[position] = value;
+    mAttrValues[attrIndex] = value;
 }
-
-void Instance::setValue(int attrIndex, const string& value)
+////////////////////////////////////////////////////////////////////////////////////////
+//sparse implement
+////////////////////////////////////////////////////////////////////////////////////////
+SparseInstance::SparseInstance(int numAttributes):
+    AbstractInstance(numAttributes), mIndices(numAttributes, -1)
 {
-    assert(mDataset != NULL);
-    Attribute* attr = attributeAt(attrIndex);
-    setValue(*attr, value);
 }
-
-void Instance::setValue(Attribute& attr, const string& value)
+SparseInstance::SparseInstance(const SparseInstance& instance):
+    AbstractInstance(instance), mIndices(instance.mIndices)
 {
-    if(!attr.isNominal() && !attr.isString())
-        throw runtime_error("attribute should be nominal or string");
-    int valIndex = attr.indexOfValue(value);
-    if(valIndex == -1)
+}
+SparseInstance::SparseInstance(const vector<ValueType>& values, const vector<int>& indices, ValueType weight):
+    AbstractInstance(values, weight), mIndices(indices)
+{
+}
+SparseInstance*  SparseInstance::clone()
+{
+    return new SparseInstance(*this);
+}
+bool SparseInstance::isSparse()
+{
+    return true;
+}
+int  SparseInstance::getIndexAt(int localIdx)
+{
+    return mIndices[localIdx];
+}
+int SparseInstance::findPosition(int globalIndex) const
+{
+    vector<int>::const_iterator it = find(mIndices.begin(), mIndices.end(), globalIndex);
+    if(mIndices.end() != it)
     {
-        if(attr.isNominal())
-        {
-            throw runtime_error("value not defined for given nominal attribute");
-        }
-        else
-        {
-            attr.addValue(value);
-            valIndex = attr.indexOfValue(value);
-        }
+        return -1;
     }
-    setValue(attr.getIndex(), (DataType)valIndex);
+    return it - mIndices.begin();
+}
+void SparseInstance::setValue(int attrIndex, ValueType value)
+{
+    int idc = findPosition(attrIndex);
+    if (idc < 0)
+    {
+        mAttrValues.push_back(value);
+        mIndices.push_back(attrIndex);
+    }
+    else
+    {
+        mAttrValues[idc] = value;
+    }
+}
+ValueType SparseInstance::getValue(int attrIndex)
+{
+    int idc = findPosition(attrIndex);
+    if (idc < 0)
+    {
+        AbstractInstance::missingValue();
+    }
+    return mAttrValues[idc];
 }
 }

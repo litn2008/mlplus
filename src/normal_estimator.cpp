@@ -2,6 +2,7 @@
 #include "special_functions.h"
 #include <cmath>
 #include <stdexcept>
+#include <sstream>
 namespace mlplus
 {
 namespace estimators
@@ -9,10 +10,28 @@ namespace estimators
 
 using namespace std;
 
+NormalEstimator::NormalEstimator(double precision) : 
+    mPrecision(precision),mSumOfWeights(0), 
+    mSumOfValues(0), mSumOfValuesSq(0),mMean(0), mStardardDev(precision / (2 * 3))
+{
+}
 NormalEstimator::~NormalEstimator()
 {
 }
 
+string  NormalEstimator::toString()
+{
+    ostringstream oss;
+    oss << mPrecision << "\t" << mSumOfWeights <<"\t" << mSumOfValues <<"\t" <<
+        mSumOfValuesSq << "\t" <<
+        mMean <<"\t" << mStardardDev;
+    return oss.str();
+}
+void  NormalEstimator::fromString(const string& str)
+{
+    istringstream iss(str,istringstream::in);
+    iss >> mPrecision >> mSumOfWeights >> mSumOfValues >> mSumOfValuesSq >> mMean >> mStardardDev;
+}
 void NormalEstimator::addValue(double data, double weight)
 {
     if(weight == 0)

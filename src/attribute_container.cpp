@@ -14,9 +14,9 @@ VectorAttributeContainer* VectorAttributeContainer::deepCopy()
     for(VectorContainer::iterator it = p->mAttributeVec.begin(); 
         it != p->mAttributeVec.end(); ++it)
     {
-        if(NULL != *it)
+        if(*it)
         {
-            *it = (*it)->clone();
+            (*it).reset((*it)->clone());
         }
     }
     return p;
@@ -42,14 +42,14 @@ void VectorAttributeContainer::merge(IAttributeContainer* vec)
     AutoAttributeIteratorPtr p(vec->newIterator());
     while(p->hasMore())
     {
-        mAttributeVec.push_back(p->next());
+        mAttributeVec.push_back(SharedAttributePtr(p->next()));
     }
 }
 Attribute* VectorAttributeContainer::at(int index)
 {
     if((unsigned)index < mAttributeVec.size())
     {
-        return mAttributeVec[index];
+        return mAttributeVec[index].get();
     }
     return NULL;
 }
@@ -59,16 +59,12 @@ bool VectorAttributeContainer::set(int index, Attribute* attr)
     {
         return false;
     }
-    if(NULL != mAttributeVec[index])
-    {
-        delete mAttributeVec[index];
-    }
-    mAttributeVec[index] = attr;
+    mAttributeVec[index].reset(attr);
     return true;
 }
 void VectorAttributeContainer::add(Attribute* att)
 {
-    mAttributeVec.push_back(att);
+    mAttributeVec.push_back(SharedAttributePtr(att));
 }
 unsigned int VectorAttributeContainer::size()
 {
@@ -92,7 +88,7 @@ MapAttributeContainer* MapAttributeContainer::deepCopy()
     {
         if(NULL != it->second)
         {
-            it->second = it->second->clone();
+            it->second.reset(it->second->clone());
         }
     }
     return p;
@@ -118,7 +114,7 @@ Attribute*  MapAttributeContainer::at(int index)
     MapContainer::iterator it = mAttributeMap.find(index);
     if(it != mAttributeMap.end())
     {
-        return it->second;
+        return it->second.get();
     }
     return NULL;
 }
@@ -129,17 +125,13 @@ bool  MapAttributeContainer::set(int index, Attribute* att)
     {
         return false;
     }
-    if(it != mAttributeMap.end() && NULL != it->second)
-    {
-        delete it->second;
-    }
-    it->second = att;
+    it->second.reset(att);
     return true;
 }
 void  MapAttributeContainer::add(Attribute* att)
 {
     unsigned count = mAttributeMap.size();
-    mAttributeMap[count] = att;
+    mAttributeMap[count].reset(att);
 }
 unsigned int  MapAttributeContainer::size()
 {

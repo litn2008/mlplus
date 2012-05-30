@@ -1,80 +1,83 @@
-#ifndef __WEKACPP_CLASSIFIERS_BAYES_NAIVEBAYES__
-#define __WEKACPP_CLASSIFIERS_BAYES_NAIVEBAYES__
+#ifndef MLPLUS_CLASSIFIERS_BAYES_NAIVEBAYES
+#define MLPLUS_CLASSIFIERS_BAYES_NAIVEBAYES
 
-#include <weka/core/Instance.h>
-#include <weka/core/Instances.h>
-#include <weka/estimators/Estimator.h>
-#include <weka/classifiers/Classifier.h>
 #include <stdexcept>
 #include <string>
 #include <vector>
-
+#include <map>
+#include "instance.h"
+#include "dataset.h"
+#include "classifier.h"
+#include "estimators/estimator.h"
+using namespace mlplus::estimators;
 namespace mlplus
 {
-
-class NaiveBayes : public Classifier
+class NaiveBayes: public Classifier
 {
-    Estimator *** m_Distributions;
-    Estimator * m_ClassDistribution;
-
 public:
-    static const double DEFAULT_PRECISION = 0.01;
-
-    static NaiveBayes* fromXML(streambuf * s);
-    static NaiveBayes* fromXML(streambuf& s);
-    static NaiveBayes* fromXML(string& xml);
-
-    int m_nClasses;
-    int m_nAttributes;
-
-    NaiveBayes(string& name, int nClasses = 0, int nAttributes = 0);
-
+    typedef int AttributeIndex;
+    typedef Estimator* EstimatorPtr;
+    typedef EstimatorPtr* PosteriorProbability; 
+    typedef std::map<AttributeIndex,  PosteriorProbability>  DistributionMapType;
+private:
+    std::map<AttributeIndex,  PosteriorProbability>  mDistributions;
+    EstimatorPtr mClassDistribution;
+    int mClassesCount;
+    void release();
+    NaiveBayes(const NaiveBayes& bas);
+public:
+    const static double  DEFAULT_PRECISION = 1;
+    NaiveBayes(const string& name, int nClasses);
     virtual ~NaiveBayes();
-
-    Estimator* getDistribution(int attrIndex, int clsIndex)
-    {
-        if(attrIndex < 0 || attrIndex >= m_nAttributes)
-            throw new runtime_error("attribute index out of range");
-        if(clsIndex < 0 || clsIndex >= m_nClasses)
-            throw new runtime_error("class index out of range");
-        return m_Distributions[attrIndex][clsIndex];
-    }
-
-    void setDistribution(int attrIndex, int clsIndex, Estimator * est)
-    {
-        if(attrIndex < 0 || attrIndex >= m_nAttributes)
-            throw new runtime_error("attribute index out of range");
-        if(clsIndex < 0 || clsIndex >= m_nClasses)
-            throw new runtime_error("class index out of range");
-        if(m_Distributions[attrIndex][clsIndex] != NULL)
-            delete m_Distributions[attrIndex][clsIndex];
-        m_Distributions[attrIndex][clsIndex] = est;
-    }
-
-    Estimator* getClassDistribution(void)
-    {
-        return m_ClassDistribution;
-    }
-
-    void setClassDistribution(Estimator * est)
-    {
-        if(m_ClassDistribution != NULL)
-            delete m_ClassDistribution;
-        m_ClassDistribution = est;
-    }
-
-    void buildClassifier(Instances * instances);
-    void updateClassifier(Instance * instance);
-    vector<double> distributionForInstance(Instance * instance);
-
-    void XMLDTD(streambuf * s);
-    void toXML(streambuf * s);
-    void XMLDTD(streambuf& s);
-    void toXML(streambuf& s);
-    void XMLDTD(string& xml);
-    void toXML(string& xml);
+    inline EstimatorPtr getDistribution(int attrIndex, int clsIndex);
+    inline void setDistribution(int attrIndex, int clsIndex, EstimatorPtr est);
+    inline EstimatorPtr getClassDistribution() const;
+    inline void setClassDistribution(EstimatorPtr est);
+    virtual void load(istream& input);
+    virtual void save(ostream& output);
+    virtual void train(DataSet* data);
+    virtual std::pair<int, double> predict(IInstance* i);
+    virtual void update(IInstance* instance);
+    virtual std::vector<double> targetDistribution(IInstance* i);
 };
 
-} // namespace 
+inline  NaiveBayes::EstimatorPtr NaiveBayes::getDistribution(int attrIndex, int clsIndex) 
+{
+    if (clsIndex >= mClassesCount)
+    {
+        return NULL;
+    }
+    std::map<AttributeIndex,  PosteriorProbability>::const_iterator it = mDistributions.find(attrIndex);
+    if (it != mDistributions.end())
+    {
+        return (it->second)[clsIndex];
+    }
+    return NULL;
+}
 
-#endif 
+inline void NaiveBayes::setDistribution(int attrIndex, int clsIndex, EstimatorPtr est)
+{
+    EstimatorPtr& p = mDistributions[attrIndex][clsIndex];
+    if (NULL != p)
+    {
+        delete p;
+    }
+    p  = est;
+}
+
+inline  NaiveBayes::EstimatorPtr NaiveBayes::getClassDistribution(void) const
+{
+    return mClassDistribution;
+}
+
+inline void NaiveBayes::setClassDistribution(EstimatorPtr est)
+{
+    if (mClassDistribution)
+    {
+        delete mClassDistribution;
+    }
+    mClassDistribution = est;
+}
+} // namespace
+
+#endif

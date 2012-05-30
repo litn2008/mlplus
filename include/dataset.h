@@ -1,10 +1,14 @@
 #ifndef MLPLUS_DATASET_H
 #define MLPLUS_DATASET_H
-
 #include <cstdlib>
+#include <cassert>
 #include <stdexcept>
 #include <string>
+#include <memory>
 #include "attribute.h"
+#include "instance_interface.h"
+#include "instance_container_interface.h"
+#include "attribute_container_interface.h"
 namespace mlplus
 {
 using namespace std;
@@ -13,73 +17,43 @@ class DataSet
 {
 private:
     string mName;
-    vector<Attribute*> mAttributes;
-    vector<Instance*> mInstances;
+    IAttributeContainer* mAttributes;
+    IInstanceContainer* mInstances;
     int mTagetIndex;
+    DataSet(const DataSet& other);
 public:
-    DataSet(const string& name, vector<Attribute*>& attrs, int capacity = 0);
-    DataSet(DataSet& other);
-    DataSet(DataSet* other);
+    DataSet(const string& name, IAttributeContainer* attrCons, IInstanceContainer* insCons);
+    DataSet(const string& name, IAttributeContainer* attrCons);
+    DataSet(const string& name, IInstanceContainer* insCons);
+    DataSet(const string& name);
+    virtual ~DataSet();
+    inline IInstanceContainer* getInstanceContainer();
+    inline IAttributeContainer* getAttributeContainer();
+    inline void getInstanceContainer(IInstanceContainer*);
+    inline void getAttributeContainer(IAttributeContainer*);
 
-    virtual ~DataSet() {}
+    inline IAttributeIterator* newAttributeIterator();
+    inline IInstanceIterator* newInstanceIterator();
 
-    Attribute* attributeAt(int i)
-    {
-        return mAttributes.at(i);
-    }
-    void setAttribute(unsigned int i, Attribute* attr)
-    {
-        if (i >= mAttributes.size())
-            throw runtime_error("input index is out the range of attribute's size");
-        if(NULL != mAttributes[i] && mAttributes[i] != attr)
-            delete mAttributes[i];
-        mAttributes[i] = attr;
-    }
-    Attribute* targetAttribute()
-    {
-        if(mTagetIndex < 0)
-            throw runtime_error("target index is not set");
-        return attributeAt(mTagetIndex);
-    }
-    int targetIndex() const
-    {
-        return mTagetIndex;
-    }
-    int numTargets()
-    {
-        if(mTagetIndex < 0)
-            throw new runtime_error("target index is not set");
-        if(!targetAttribute()->isNominal())
-            return 1;
-        return targetAttribute()->numValues();
-    }
-    void setTarget(Attribute* attr)
-    {
-        mTagetIndex = attr->getIndex();
-    }
-    int numAttributes()
-    {
-        return mAttributes.size();
-    }
-    void setTargetIndex(int targetIndex)
-    {
-        if(targetIndex >= numAttributes())
-            throw new runtime_error("invalid class index");
-        mTagetIndex = targetIndex;
-    }
+    inline Attribute* attributeAt(int i);
+    inline bool setAttribute(unsigned int i, Attribute* attr);
+    inline Attribute* targetAttribute();
+    inline int targetIndex() const;
+    inline void setTargetIndex(int targetIndex);
+    inline void setTarget(Attribute* attr);
+    inline IInstance* instanceAt(int i);
+    inline int numInstances();
+    inline int numTargets();
+    inline int numAttributes();
+    inline void add(IInstance* instance);
+    inline std::vector<ValueType> attributeArray(Attribute& attr);
+    std::vector<ValueType> attributeArray(int attIndex);
 #if 0
-    inline vector<double> attributeToDoubleArray(Attribute& attr)
-    {
-        return attributeToDoubleArray(attr.index());
-    }
-
     bool checkForAttributeType(int attType) const;
     bool isStringAttributes() const
     {
         return checkForAttributeType(Attribute::STRING);
     }
-
-
     void deleteWithMissing(Attribute * attr)
     {
         deleteWithMissing(attr->index());
@@ -90,102 +64,120 @@ public:
             throw new runtime_error("target index is not set");
         deleteWithMissing(mTagetIndex);
     }
-    Instance* instance(int i)
-    {
-        return mInstances.at(i);
-    }
-    Instance* firstInstance()
-    {
-        vector<Instance *>::iterator i = mInstances.begin();
-        if(i != mInstances.end())
-            return *i;
-    }
-    Instance* lastInstance()
-    {
-        vector<Instance *>::reverse_iterator i = mInstances.rbegin();
-        if(i != mInstances.rend())
-            return *i;
-    }
-    double kthSmallestValue(Attribute* attr, int k)
-    {
-        return kthSmallestValue(attr->index(), k);
-    }
-    double kthSmallestValue(int attIndex, int k);
-
-    double mean(Attribute& attr)
-    {
-        return mean(attr.index());
-    }
-    double mean(int attIndex);
-    double variance(Attribute& attr)
-    {
-        return variance(attr.index());
-    }
-    double variance(int attIndex);
-
-    int numInstances()
-    {
-        return mInstances.size();
-    }
     void randomize()
     {
         for(int j = numInstances() - 1; j > 0; j--)
             swap(j, (int)(random() % (j + 1)));
     }
-
-
-    void setRelationName(string& newName) 
-    {
-        mRelationName = newName;
-    }
-    const string& relationName() const
-    {
-        return mRelationName;
-    }
-    void sort(Attribute& attr)
-    {
-        sort(attr.index());
-    }
-    void sort(Attribute* attr)
-    {
-        sort(attr->index());
-    }
-    void sort(int attIndex);
-
-    vector<double> attributeToDoubleArray(int attIndex);
     bool checkInstance(Instance& instance);
-
-    void add(Instance* instance);
-    void add(Instance& instance);
-
     void deleteAll();
     void deleteInstance(int index);
     void deleteAttributeAt(int position);
     void deleteWithMissing(int attIndex);
-
     DataSet* resample();
     DataSet* resampleWithWeights();
     DataSet* resampleWithWeights(vector<double>& weights);
-
-    double sumOfWeights();
     void swap(int i, int j);
-
-protected:
-    /*
-     * partition the instances into 2 sections, like qsort
-     */
-    int partition(int attIndex, int l, int r);
-    void quickSort(int attIndex, int left, int right);
-    int select(int attIndex, int left, int right, int k);
 private:
     /*
      * move all instances with missing values to end
      * @return the position point to the last instance without missing value
      */
     int moveInstanceWithMissing();
-#endif    
+#endif
 };
 
+inline Attribute* DataSet::attributeAt(int i)
+{
+    assert(mAttributes);
+    return mAttributes->at(i);
+}
+inline IInstanceContainer* DataSet::getInstanceContainer()
+{
+    return mInstances;
+}
+inline IAttributeContainer* DataSet::getAttributeContainer()
+{
+    return mAttributes;
 }
 
+inline void DataSet::getInstanceContainer(IInstanceContainer* cons)
+{
+    if (NULL != mInstances)
+    {
+        delete mInstances;
+    }
+    mInstances = cons;
+}
+inline void DataSet::getAttributeContainer(IAttributeContainer* cons)
+{
+    if (NULL != mAttributes)
+    {
+        delete mAttributes;
+    }
+    mAttributes = cons;
+}
+inline IAttributeIterator* DataSet::newAttributeIterator()
+{
+    return mAttributes->newIterator();
+}
+inline IInstanceIterator* DataSet::newInstanceIterator()
+{
+    return mInstances->newIterator();
+}
+inline IInstance* DataSet::instanceAt(int i)
+{
+    assert(mInstances);
+    return mInstances->at(i);
+}
+inline bool DataSet::setAttribute(unsigned int i, Attribute* attr)
+{
+    assert(mAttributes);
+    return mAttributes->set(i, attr);
+}
+inline Attribute* DataSet::targetAttribute() 
+{
+    return attributeAt(mTagetIndex);
+}
+inline int DataSet::targetIndex() const
+{
+    return mTagetIndex;
+}
+inline int DataSet::numInstances() 
+{
+    assert(mInstances);
+    return mInstances->size();
+}
+inline int DataSet::numTargets() 
+{
+    if(mTagetIndex < 0)
+        throw runtime_error("target index is not set");
+    if(!targetAttribute()->isNominal())
+        return 1;
+    return targetAttribute()->numValues();
+}
+inline void DataSet::setTarget(Attribute* attr)
+{
+    mTagetIndex = attr->getIndex();
+}
+inline int DataSet::numAttributes()
+{
+    assert(mAttributes);
+    return mAttributes->size();
+}
+inline void DataSet::setTargetIndex(int targetIndex)
+{
+    if(targetIndex >= numAttributes())
+        throw new runtime_error("invalid class index");
+    mTagetIndex = targetIndex;
+}
+inline vector<ValueType> DataSet::attributeArray(Attribute& attr)
+{
+    return attributeArray(attr.getIndex());
+}
+inline void DataSet::add(IInstance* instance)
+{
+    mInstances->add(instance);
+}
+}
 #endif /**/

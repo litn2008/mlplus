@@ -24,10 +24,13 @@ GMOCK_HEADERS = $(GMOCK_DIR)/include/gmock/*.h \
 SRC = $(PROJECT_DIR)/src
 INCLUDE = $(PROJECT_DIR)/include
 
-all : naive_bayes
+all : naive_bayes_train naive_bayes_classify
     
-naive_bayes: naive_bayes_run.cpp $(SRC)/naive_bayes.cpp $(SRC)/abstract_instance.cpp $(SRC)/instance.cpp  $(SRC)/attribute.cpp $(SRC)/dataset.cpp $(SRC)/instance_container.cpp $(SRC)/attribute_container.cpp $(SRC)/special_functions.cpp $(SRC)/estimator.cpp  $(SRC)/normal_estimator.cpp $(SRC)/discrete_estimator.cpp $(SRC)/special_functions.cpp
+naive_bayes_train: naive_bayes_train.cpp $(SRC)/naive_bayes.cpp $(SRC)/abstract_instance.cpp $(SRC)/instance.cpp  $(SRC)/attribute.cpp $(SRC)/dataset.cpp $(SRC)/instance_container.cpp $(SRC)/attribute_container.cpp $(SRC)/special_functions.cpp $(SRC)/estimator.cpp  $(SRC)/normal_estimator.cpp $(SRC)/discrete_estimator.cpp $(SRC)/special_functions.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lm -lpthread $^ -o $@
+
+naive_bayes_classify: naive_bayes_classify.cpp $(SRC)/naive_bayes.cpp $(SRC)/abstract_instance.cpp $(SRC)/instance.cpp  $(SRC)/attribute.cpp $(SRC)/dataset.cpp $(SRC)/instance_container.cpp $(SRC)/attribute_container.cpp $(SRC)/special_functions.cpp $(SRC)/estimator.cpp  $(SRC)/normal_estimator.cpp $(SRC)/discrete_estimator.cpp $(SRC)/special_functions.cpp
+
 clean :
 	rm -f $(TESTS) *_unittest
 

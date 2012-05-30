@@ -20,11 +20,10 @@ public:
     double mMean;
     double mStardardDev;
 public:
-    NormalEstimator(double precision) : 
-        mPrecision(precision),mSumOfWeights(0), mSumOfValues(0), mSumOfValuesSq(0),mMean(0), mStardardDev(precision / (2 * 3))
-    {
-    }
+    NormalEstimator(double precision);
     virtual ~NormalEstimator();
+    /*override*/string toString();
+    /*override*/void fromString(const std::string&);
     double round(double data)
     {
         return rint(data / mPrecision) * mPrecision;

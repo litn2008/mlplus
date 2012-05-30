@@ -23,6 +23,8 @@ public:
     /*override*/ double getProbability(double data);
     using Estimator::addValue;
     /*override*/ void addValue(double data, double weight);
+    /*override*/std::string toString();
+    /*override*/void fromString(const std::string&);
 
 };
 inline int DiscreteEstimator::getNumOfClass(void) const

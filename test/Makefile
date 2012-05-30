@@ -24,12 +24,21 @@ GMOCK_HEADERS = $(GMOCK_DIR)/include/gmock/*.h \
 SRC = $(PROJECT_DIR)/src
 INCLUDE = $(PROJECT_DIR)/include
 
-all :attribute_unittest instance_unittest
+all :attribute_unittest instance_unittest special_function_unittest estimator_unittest  naive_bayes_unittest
     
 attribute_unittest: attribute_unittest.cpp  $(PROJECT_DIR)/src/attribute.cpp $(PROJECT_DIR)/include/attribute.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
 
-instance_unittest: instance_unittest.cpp $(SRC)/instance.cpp $(SRC)/attribute.cpp $(SRC)/dataset.cpp
+instance_unittest: instance_unittest.cpp $(SRC)/abstract_instance.cpp $(SRC)/instance.cpp  $(SRC)/attribute.cpp $(SRC)/dataset.cpp $(SRC)/instance_container.cpp $(SRC)/attribute_container.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
+
+special_function_unittest: special_function_unittest.cpp $(SRC)/special_functions.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
+
+estimator_unittest: estimator_unittest.cpp $(SRC)/estimator.cpp  $(SRC)/normal_estimator.cpp $(SRC)/discrete_estimator.cpp $(SRC)/special_functions.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
+
+naive_bayes_unittest: naive_bayes_unittest.cpp $(SRC)/naive_bayes.cpp $(SRC)/abstract_instance.cpp $(SRC)/instance.cpp  $(SRC)/attribute.cpp $(SRC)/dataset.cpp $(SRC)/instance_container.cpp $(SRC)/attribute_container.cpp $(SRC)/special_functions.cpp $(SRC)/estimator.cpp  $(SRC)/normal_estimator.cpp $(SRC)/discrete_estimator.cpp $(SRC)/special_functions.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lgmock -lgmock_main -lpthread $^ -o $@
 clean :
 	rm -f $(TESTS) *_unittest
