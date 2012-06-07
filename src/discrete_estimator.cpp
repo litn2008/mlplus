@@ -11,18 +11,18 @@ namespace estimators
 using namespace std;
 
 DiscreteEstimator::DiscreteEstimator(const DiscreteEstimator& other):
-    Estimator(other), mCounts(NULL),
+    IdentifiableEstimator<DiscreteEstimator>(other), mCounts(NULL),
     mSumOfCounts(other.mSumOfCounts), mNumOfClass(other.mNumOfClass)
 {
     mCounts = new double[other.mNumOfClass];
 }
-void DiscreteEstimator::addValue(double data, double weight)
+void DiscreteEstimator::addValue(double val, double weight)
 {
-    if(mSumOfCounts <= data)
+    if(mNumOfClass <= val)
     {
         return;
     }
-    mCounts[(int)data] += weight;
+    mCounts[(int)val] += weight;
     mSumOfCounts += weight;
 }
 
@@ -42,7 +42,12 @@ double DiscreteEstimator::getProbability(double data)
 {
     if(mSumOfCounts == 0)
         return 0;
-    return (double)mCounts[(int)data] / mSumOfCounts;
+    int id = (int)data;
+    if (id > -1 && id < mNumOfClass)
+    {
+        return mCounts[id] / mSumOfCounts;
+    }
+    return 0;
 }
 DiscreteEstimator::DiscreteEstimator(int nSymbols, double fPrior)
 {
@@ -72,9 +77,9 @@ std::string DiscreteEstimator::toString()
     }
     return oss.str();
 }
-void DiscreteEstimator::fromString(const std::string&)
+void DiscreteEstimator::fromString(const std::string& str)
 {
-    istringstream iss;
+    istringstream iss(str);
     iss >> mSumOfCounts >> mNumOfClass;
     if (NULL != mCounts)
     {

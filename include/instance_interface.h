@@ -19,7 +19,7 @@ public:
     virtual void reserve(int numAttribue) = 0;
     virtual Attribute* attributeAt(int globalIndex) = 0;
     virtual Attribute* targetAttribute() = 0;
-    virtual int getIndexAt(int localIdx) = 0;
+    virtual int attributeIndex(int localIdx) = 0;
     virtual int targetIndex() = 0;
     virtual bool targetIsMissing() = 0;
     virtual ValueType targetValue() = 0;

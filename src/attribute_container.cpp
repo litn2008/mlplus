@@ -53,18 +53,26 @@ Attribute* VectorAttributeContainer::at(int index)
     }
     return NULL;
 }
-bool VectorAttributeContainer::set(int index, Attribute* attr)
+void VectorAttributeContainer::set(int index, Attribute* attr)
 {
     if((unsigned)index >= mAttributeVec.size())
     {
-        return false;
+        mAttributeVec.resize(index + 1);
     }
     mAttributeVec[index].reset(attr);
-    return true;
 }
 void VectorAttributeContainer::add(Attribute* att)
 {
-    mAttributeVec.push_back(SharedAttributePtr(att));
+    int index = att->getIndex();
+    if (index < 0)
+    {
+        att->setIndex(mAttributeVec.size());
+        mAttributeVec.push_back(SharedAttributePtr(att));
+    }
+    else
+    {
+        set(index, att);
+    }
 }
 unsigned int VectorAttributeContainer::size()
 {
@@ -97,6 +105,9 @@ MapAttributeContainer::MapAttributeContainer(MapContainer& mp):
     mAttributeMap(mp)
 {
 }
+MapAttributeContainer::MapAttributeContainer()
+{
+}
 void MapAttributeContainer::merge(IAttributeContainer* cons)
 {
     if (NULL == cons)
@@ -118,20 +129,23 @@ Attribute*  MapAttributeContainer::at(int index)
     }
     return NULL;
 }
-bool  MapAttributeContainer::set(int index, Attribute* att)
+void MapAttributeContainer::set(int index, Attribute* att)
 {
-    MapContainer::iterator it = mAttributeMap.find(index);
-    if(it ==  mAttributeMap.end())
-    {
-        return false;
-    }
-    it->second.reset(att);
-    return true;
+    mAttributeMap[index].reset(att);
 }
 void  MapAttributeContainer::add(Attribute* att)
 {
-    unsigned count = mAttributeMap.size();
-    mAttributeMap[count].reset(att);
+    int index = att->getIndex();
+    if (index < 0)
+    {
+        unsigned count = mAttributeMap.size();
+        att->setIndex(count);
+        mAttributeMap[count].reset(att);
+    }
+    else
+    {
+        set(index, att);
+    }
 }
 unsigned int  MapAttributeContainer::size()
 {

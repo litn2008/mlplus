@@ -45,6 +45,7 @@ int main(int argn, char** args)
         target->setIndex(i);
         attributes->add(target);
     }
+    dataset.setTarget(target);//last attribute is the target
     DenseInstance* instance = NULL;
     while(getline(ifs, str))
     {
@@ -56,7 +57,7 @@ int main(int argn, char** args)
         instance->setDataset(&dataset);
         instances->add(instance);
     }
-    dataset.setTarget(target);
+
     NaiveBayes bayes("wine_quality", 10);
     bayes.train(&dataset);
     std::vector<double> vect = bayes.targetDistribution(instance);

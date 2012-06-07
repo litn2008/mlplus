@@ -36,7 +36,7 @@ public:
     inline IInstanceIterator* newInstanceIterator();
 
     inline Attribute* attributeAt(int i);
-    inline bool setAttribute(unsigned int i, Attribute* attr);
+    inline void setAttribute(unsigned int i, Attribute* attr);
     inline Attribute* targetAttribute();
     inline int targetIndex() const;
     inline void setTargetIndex(int targetIndex);
@@ -130,7 +130,7 @@ inline IInstance* DataSet::instanceAt(int i)
     assert(mInstances);
     return mInstances->at(i);
 }
-inline bool DataSet::setAttribute(unsigned int i, Attribute* attr)
+inline void DataSet::setAttribute(unsigned int i, Attribute* attr)
 {
     assert(mAttributes);
     return mAttributes->set(i, attr);
@@ -152,8 +152,6 @@ inline int DataSet::numTargets()
 {
     if(mTagetIndex < 0)
         throw runtime_error("target index is not set");
-    if(!targetAttribute()->isNominal())
-        return 1;
     return targetAttribute()->numValues();
 }
 inline void DataSet::setTarget(Attribute* attr)

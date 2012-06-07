@@ -7,6 +7,7 @@ namespace estimators
 {
 using namespace std;
 
+EstimatorID::Type EstimatorID::sNextID = 0;
 Estimator::Estimator()
 {
 }

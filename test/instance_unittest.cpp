@@ -36,7 +36,6 @@ TEST(DataSetTest, smoke){
     EXPECT_EQ(data->attributeAt(0), name.get()); 
     EXPECT_EQ(data->numAttributes(), 3); 
     EXPECT_FALSE(data->attributeAt(3)); 
-    EXPECT_FALSE(data->setAttribute(3, name.get())); 
 
     DenseInstance instance(10);
     instance.setDataset(data);

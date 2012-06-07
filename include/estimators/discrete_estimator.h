@@ -6,7 +6,7 @@ namespace mlplus
 {
 namespace estimators
 {
-class DiscreteEstimator: public Estimator
+class DiscreteEstimator: public IdentifiableEstimator<DiscreteEstimator>
 {
     double* mCounts;
     double mSumOfCounts;

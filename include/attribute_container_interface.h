@@ -9,7 +9,7 @@ public:
     IAttributeContainer(){}
     virtual ~IAttributeContainer() {}
     virtual void merge(IAttributeContainer* cons) = 0;
-    virtual bool set(int index, Attribute* att) = 0;
+    virtual void set(int index, Attribute* att) = 0;
     virtual void add(Attribute* att) = 0;
     virtual Attribute* at(int index) = 0;
     virtual unsigned int size() = 0;

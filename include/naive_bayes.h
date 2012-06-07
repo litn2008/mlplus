@@ -20,9 +20,10 @@ public:
     typedef EstimatorPtr* PosteriorProbability; 
     typedef std::map<AttributeIndex,  PosteriorProbability>  DistributionMapType;
 private:
-    std::map<AttributeIndex,  PosteriorProbability>  mDistributions;
+    DistributionMapType mDistributions;
     EstimatorPtr mClassDistribution;
     int mClassesCount;
+    bool mEventModel;
     void release();
     NaiveBayes(const NaiveBayes& bas);
 public:
@@ -33,12 +34,22 @@ public:
     inline void setDistribution(int attrIndex, int clsIndex, EstimatorPtr est);
     inline EstimatorPtr getClassDistribution() const;
     inline void setClassDistribution(EstimatorPtr est);
+    inline void setEventModel(bool v = true);
+    inline bool getEventModel() const;
     virtual void load(istream& input);
     virtual void save(ostream& output);
     virtual void train(DataSet* data);
     virtual std::pair<int, double> predict(IInstance* i);
     virtual void update(IInstance* instance);
     virtual std::vector<double> targetDistribution(IInstance* i);
+private:
+    void trainBernoulli(DataSet* data);
+    void trainMultinomial(DataSet* data);
+    void updateBernoulli(IInstance* instance);
+    void updateMultinomial(IInstance* instance);
+    std::vector<double> predictBernoulli(IInstance* i);
+    std::vector<double> predictMultinomial(IInstance* i);
+    std::vector<double> scoreToProb(const std::vector<double>& score);
 };
 
 inline  NaiveBayes::EstimatorPtr NaiveBayes::getDistribution(int attrIndex, int clsIndex) 
@@ -77,6 +88,16 @@ inline void NaiveBayes::setClassDistribution(EstimatorPtr est)
         delete mClassDistribution;
     }
     mClassDistribution = est;
+}
+
+inline void NaiveBayes::setEventModel(bool v)
+{
+    mEventModel = v;
+}
+
+inline bool NaiveBayes::getEventModel() const
+{
+    return mEventModel;
 }
 } // namespace
 

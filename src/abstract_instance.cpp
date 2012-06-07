@@ -201,12 +201,12 @@ void AbstractInstance::setValue(int attrIndex, const string& value)
 }
 void AbstractInstance::setValue(Attribute& attr, const string& value)
 {
-    if(!attr.isNominal() && !attr.isString())
-        throw runtime_error("attribute should be nominal or string");
+    if(!attr.isNamedNominal() && !attr.isString())
+        throw runtime_error("attribute should be named nominal or string");
     int valIndex = attr.indexOfValue(value);
     if(valIndex == -1)
     {
-        if(attr.isNominal())
+        if(attr.isNamedNominal())
         {
             throw runtime_error("value not defined for given nominal attribute");
         }

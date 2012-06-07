@@ -21,7 +21,7 @@ bool DenseInstance::isSparse()
 {
     return false;
 }
-int DenseInstance::getIndexAt(int localIdx)
+int DenseInstance::attributeIndex(int localIdx)
 {
     return localIdx;
 }
@@ -47,14 +47,25 @@ void  DenseInstance::setValue(int attrIndex, ValueType value)
 SparseInstance::SparseInstance(int numAttributes):
     AbstractInstance(numAttributes), mIndices(numAttributes, -1)
 {
+    initGlobal2LocalMap();
 }
 SparseInstance::SparseInstance(const SparseInstance& instance):
     AbstractInstance(instance), mIndices(instance.mIndices)
 {
+    initGlobal2LocalMap();
 }
 SparseInstance::SparseInstance(const vector<ValueType>& values, const vector<int>& indices, ValueType weight):
     AbstractInstance(values, weight), mIndices(indices)
 {
+    initGlobal2LocalMap();
+}
+void SparseInstance::initGlobal2LocalMap()
+{
+    mGlobal2Local.clear();
+    for (int i = 0; i < (int)mIndices.size(); ++i)
+    {
+        mGlobal2Local[mIndices[i]] = i;
+    }
 }
 SparseInstance*  SparseInstance::clone()
 {
@@ -64,24 +75,26 @@ bool SparseInstance::isSparse()
 {
     return true;
 }
-int  SparseInstance::getIndexAt(int localIdx)
+
+int  SparseInstance::attributeIndex(int localIdx)
 {
     return mIndices[localIdx];
 }
-int SparseInstance::findPosition(int globalIndex) const
+int  SparseInstance::findPosition(int globalIndex) const
 {
-    vector<int>::const_iterator it = find(mIndices.begin(), mIndices.end(), globalIndex);
-    if(mIndices.end() != it)
-    {
-        return -1;
-    }
-    return it - mIndices.begin();
+     map<int,int>::const_iterator it = mGlobal2Local.find(globalIndex);
+     if (it == mGlobal2Local.end())
+     {
+         return -1;
+     }
+     return it->second;
 }
 void SparseInstance::setValue(int attrIndex, ValueType value)
 {
     int idc = findPosition(attrIndex);
     if (idc < 0)
     {
+        mGlobal2Local[attrIndex] = mAttrValues.size();
         mAttrValues.push_back(value);
         mIndices.push_back(attrIndex);
     }

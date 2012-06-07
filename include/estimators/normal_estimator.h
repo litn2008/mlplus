@@ -1,16 +1,15 @@
 #ifndef MLPLUS_ESTIMATORS_NORMALESTIMATOR_H
 #define MLPLUS_ESTIMATORS_NORMALESTIMATOR_H
 #include "estimators/estimator.h"
+#include <string>
 #include <cmath>
-#include <stdexcept>
-
 namespace mlplus
 {
 namespace estimators
 {
 using namespace std;
 
-class NormalEstimator: public Estimator
+class NormalEstimator: public IdentifiableEstimator<NormalEstimator>
 {
 public:
     double mPrecision;

@@ -41,7 +41,7 @@ public:
     VectorAttributeContainer(int attributeCapbility = ATTRIBUTE_THREHOLD);
     VectorAttributeContainer(VectorAttributeContainer::VectorContainer& cons);
     /*override*/ void merge(IAttributeContainer* cons);
-    /*override*/ bool set(int index, Attribute* att);
+    /*override*/ void set(int index, Attribute* att);
     /*override*/ void add(Attribute* att);
     /*override*/ Attribute* at(int index);
     /*override*/ unsigned int size();
@@ -75,9 +75,10 @@ public:
         }
     };
 public:
+    MapAttributeContainer();
     MapAttributeContainer(MapContainer& mp);
     /*override*/ void merge(IAttributeContainer* cons);
-    /*override*/ bool set(int index, Attribute* att);
+    /*override*/ void set(int index, Attribute* att);
     /*override*/ void add(Attribute* att);
     /*override*/ Attribute* at(int index);
     /*override*/ unsigned int size();

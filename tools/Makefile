@@ -1,38 +1,38 @@
 PROJECT_DIR = ..
-GMOCK_DIR = ../external
-# Where to find user code.
-
-# Flags passed to the preprocessor.
-CPPFLAGS +=  -I$(GMOCK_DIR)/include -I$(PROJECT_DIR)/include -L$(GMOCK_DIR)/lib
-
+CPPFLAGS +=  -I$(GMOCK_DIR)/include -I$(PROJECT_DIR)/include -L$(GMOCK_DIR)/lib -L.
 # Flags passed to the C++ compiler.
 CXXFLAGS += -g -Wall -Wextra 
 
-# All tests produced by this Makefile.  Remember to add new tests you
-# created to the list.
-# All Google Test headers
-GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
-                $(GTEST_DIR)/include/gtest/internal/*.h
-
-# All Google Mock headers
-GMOCK_HEADERS = $(GMOCK_DIR)/include/gmock/*.h \
-                $(GMOCK_DIR)/include/gmock/internal/*.h \
-                $(GTEST_HEADERS)
-
-# House-keeping build targets.
-
-SRC = $(PROJECT_DIR)/src
+DIR = $(PROJECT_DIR)/src
 INCLUDE = $(PROJECT_DIR)/include
+SRCS = naive_bayes.cpp abstract_instance.cpp instance.cpp  attribute.cpp instance_container.cpp attribute_container.cpp special_functions.cpp estimator.cpp  normal_estimator.cpp discrete_estimator.cpp binary_estimator.cpp dataset.cpp 
 
-all : naive_bayes_train naive_bayes_classify
-    
-naive_bayes_train: naive_bayes_train.cpp $(SRC)/naive_bayes.cpp $(SRC)/abstract_instance.cpp $(SRC)/instance.cpp  $(SRC)/attribute.cpp $(SRC)/dataset.cpp $(SRC)/instance_container.cpp $(SRC)/attribute_container.cpp $(SRC)/special_functions.cpp $(SRC)/estimator.cpp  $(SRC)/normal_estimator.cpp $(SRC)/discrete_estimator.cpp $(SRC)/special_functions.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lm -lpthread $^ -o $@
+OBJ=$(SRCS:.cpp=.o)
 
-naive_bayes_classify: naive_bayes_classify.cpp $(SRC)/naive_bayes.cpp $(SRC)/abstract_instance.cpp $(SRC)/instance.cpp  $(SRC)/attribute.cpp $(SRC)/dataset.cpp $(SRC)/instance_container.cpp $(SRC)/attribute_container.cpp $(SRC)/special_functions.cpp $(SRC)/estimator.cpp  $(SRC)/normal_estimator.cpp $(SRC)/discrete_estimator.cpp $(SRC)/special_functions.cpp
+all : naive_bayes_train naive_bayes_classify naive_bayes_train_sparse naive_bayes_classify_sparse libnaive_bayes_core.a $(OBJ)
 
+%.o: $(DIR)/%.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+
+libnaive_bayes_core.a: $(OBJ) 
+	$(AR) rcs $@ $^ 
+
+naive_bayes_train: naive_bayes_train.cpp libnaive_bayes_core.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< -lnaive_bayes_core -lm -lpthread -o $@
+
+naive_bayes_classify: naive_bayes_classify.cpp  libnaive_bayes_core.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< -lnaive_bayes_core -lm -lpthread -o $@ 
+
+naive_bayes_train_sparse:  naive_bayes_train_sparse.cpp  libnaive_bayes_core.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< -lnaive_bayes_core -lm -lpthread -o $@
+
+naive_bayes_classify_sparse:  naive_bayes_classify_sparse.cpp  libnaive_bayes_core.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< -lnaive_bayes_core -lm -lpthread -o $@
 clean :
-	rm -f $(TESTS) *_unittest
-
-
+	rm -f $(TESTS) *.o
+	rm -f *.a
+	rm naive_bayes_train 
+	rm naive_bayes_classify
+	rm naive_bayes_train_sparse
+	rm naive_bayes_classify_sparse
 

@@ -21,7 +21,7 @@ TEST(AttributeTest, create) {
     Attribute* position = new Attribute("position", nominal_values);
     EXPECT_EQ(position->getName(), "position");
     EXPECT_EQ(position->getWeight(), 0);
-    EXPECT_TRUE(position->isNominal());
+    EXPECT_TRUE(position->isNamedNominal());
     EXPECT_EQ(position->getIndex(), -1);
     EXPECT_EQ(position->getValue(0), "first"); 
     EXPECT_EQ(position->getValue(1), "second"); 
@@ -35,7 +35,7 @@ TEST(AttributeTest, smoke){
     Attribute position("position", nominal_values);
     EXPECT_EQ(position.getName(), "position");
     EXPECT_EQ(position.getWeight(), 0);
-    EXPECT_TRUE(position.isNominal());
+    EXPECT_TRUE(position.isNamedNominal());
     EXPECT_EQ(position.getIndex(), -1);
     position.addValue("second");
     EXPECT_EQ(position.getValue(0), "second"); 

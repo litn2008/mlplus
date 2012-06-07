@@ -58,14 +58,16 @@ public:
     {
         NUMERIC = 0, //the real value, with range. e.x: [0, n]
         STRING = 1,   //the string value.  e.g.  words
-        NOMINAL = 2, //the multinomial value .e.g. [0, 1, 2] 
-        DATE = 3,
+        NAMEDNOMINAL = 2, //the multinomial value .e.g. [0, 1, 2] 
+        BINARY = 3, //for sparse attribute, means attribute exit in instance
+        DATE = 4,
+        COMPACTNOMINAL, //the multinomial interger value from 0 to n, [0,n)
         UNKNOW
     };
 protected:
     std::string mName;
     /*
-     * only nominal and string attribute has mValues and mValues2Index 
+     * only NAMEDNOMINAL and string attribute has mValues and mValues2Index 
      */
     std::map<std::string, int> mValue2Index; //
     std::vector<std::string> mValues; //index ---> string
@@ -73,7 +75,7 @@ protected:
     AttributeType mType;
     double mWeight;
     Range mRange;
-
+    int mValuesSize;
 public:
 
     /** 
@@ -83,8 +85,19 @@ public:
      * @param type   The type of the attribute 
      */
     Attribute(const std::string& attrName, AttributeType type = NUMERIC);
-
-    Attribute( const std::string& attrName, std::vector<std::string>& values, AttributeType type = NOMINAL);
+    /*
+     * @brief construct a compact nominal attribute with size
+     * @param attrName The name of the attribute
+    n* @param nonimalSize the size of the nominal attribute, means the value would range [0, nominalSize),
+     *        which elements are all interger number
+     */
+    Attribute(const std::string& attrName, int nominalSize);
+    /*
+     * @brief construct a compact named nominal
+     * @param attrName The name of the attribute
+     * @param values the named nomial values with string types
+     */
+    Attribute(const std::string& attrName, std::vector<std::string>& values);
     virtual ~Attribute();
     const std::string&  getName() const
     {
@@ -102,9 +115,17 @@ public:
     {
         mWeight = weight;
     }
-    inline bool isNominal() const
+    inline bool isNamedNominal() const
     {
-        return mType == NOMINAL;
+        return mType == NAMEDNOMINAL;
+    }
+    inline bool isCompactNominal() const
+    {
+        return mType == COMPACTNOMINAL;
+    }
+    inline bool isBinary() const
+    {
+        return mType == BINARY;
     }
     inline bool isNumeric() const
     {
@@ -164,6 +185,7 @@ public:
     {
         mValue2Index[s] = mValues.size();
         mValues.push_back(s);
+        mValuesSize = mValue2Index.size();
     }
     void reserveValues(size_t storage)
     {
@@ -171,7 +193,7 @@ public:
     }
     int numValues() const
     {
-        return mValues.size();
+        return mValuesSize;/*for named nomial value count  = mValues.size();*/
     }
     int indexOfValue(const std::string& value) const;
     bool isInRange(double value) const;

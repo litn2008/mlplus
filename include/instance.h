@@ -1,5 +1,7 @@
 #ifndef MLPLUS_INSTANCE_H
 #define MLPLUS_INSTANCE_H
+#include <map>
+#include <vector>
 #include "abstract_instance.h"
 namespace mlplus
 {
@@ -15,7 +17,7 @@ public:
     using AbstractInstance::getValue;
     /*override*/ void setValue(int attrIndex, ValueType value);
     /*override*/ ValueType getValue(int attrIndex);
-    /*overirde*/ int getIndexAt(int localIdx);
+    /*overirde*/ int attributeIndex(int localIdx);
 };
 class SparseInstance: public AbstractInstance
 {
@@ -29,10 +31,12 @@ public:
     /*override*/bool isSparse();
     /*override*/void setValue(int attrIndex, ValueType value);
     /*override*/ValueType getValue(int attrIndex);
-    /*overirde*/ int getIndexAt(int localIdx);
+    /*overirde*/ int attributeIndex(int localIdx);
 private:
+    void initGlobal2LocalMap();
     int findPosition(int globalIndex) const;
-    vector<int> mIndices;
+    std::vector<int> mIndices;
+    std::map<int,int> mGlobal2Local;
 };
 }
 

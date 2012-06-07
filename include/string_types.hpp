@@ -14,7 +14,7 @@ struct IsSpace: public std::unary_function<char, bool>
 
 inline bool blankString(const std::string& str) 
 {
-    return str.find_first_not_of("\n \v") == std::string::npos;
+    return str.find_first_not_of(" \t\n\v") == std::string::npos;
 }
 
 }
